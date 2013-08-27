@@ -1,7 +1,9 @@
-seeedi.db
+*.db
 config.ini
+.pid_*
 
 *.swp
 *.pyc
 *~
 venv/
+logs/

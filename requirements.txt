@@ -1,3 +1,2 @@
-WeRoBot==0.4.0
-bottle==0.11.6
+web.py==0.37
 wsgiref==0.1.2

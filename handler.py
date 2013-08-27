@@ -16,7 +16,9 @@ class RequestHandler(SocketServer.BaseRequestHandler):
     with ardunio client.'''
 
     def setup(self):
+        print 'Connected:', self.client_address
         self.connection = sqlite3.connect(config.get('db', 'name'))
+        self.connection.text_factory = str
 
     def finish(self):
         self.connection.commit()
@@ -33,7 +35,8 @@ class RequestHandler(SocketServer.BaseRequestHandler):
 
                 command = self.get_command()
                 if command:
-                    self.request.sendall(command['value'])
+                    # write content processor here
+                    self.request.sendall(self.str_to_playframe(command['value']))
                     self.consume_command(command['id'])
             else:
                 time.sleep(1)
@@ -73,7 +76,15 @@ class RequestHandler(SocketServer.BaseRequestHandler):
         return ret
 
     def store_stats(self, stats):
+        print 'recv:', stats
         cursor = self.connection.cursor()
         cursor.execute('''INSERT INTO `stats` (`value`)
         VALUES(:value)''', {'value': stats})
         self.connection.commit()
+
+    def str_to_playframe(self, s0):
+        ss = s0.decode("utf-8")
+        l = "%c%c" % ((len(ss)&0xff00)>>8, len(ss)&0xff)
+        s = ss.encode("GB2312")
+        op = "\x01\x00"
+        return "\xfd" + l + op + s
